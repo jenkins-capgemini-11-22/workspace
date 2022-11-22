@@ -1,0 +1,114 @@
+pipeline {
+    agent any
+    environment {
+        DEV_PORTAL_AUTHORIZATION_TOKEN = credentials('dev_portal_auth_token')
+    }
+    options {
+        timeout time: 30, unit: 'MINUTES'
+        timestamps()
+    }
+    stages {
+        stage('build') {
+            agent {
+                docker {
+                    image 'openjdk:17.0.2-jdk'
+                }
+            }
+            steps {
+                sh './mvnw package'
+                junit skipPublishingChecks: true, testResults: 'target/surefire-reports/*.xml'
+                sh './publish_artefacts_to_artefact_repository.sh'
+            }
+        }
+        stage('report known vulnerabilities') {
+            agent {
+                docker {
+                    image 'openjdk:17.0.2-jdk'
+                }
+            }
+            steps {
+                sh './mvnw dependency-check:check'
+            }
+        }
+        stage('upload spotbugs heatmap') {
+            agent {
+                docker {
+                    image 'our-company-heatmap-builder-docker-image'
+                }
+            }
+            steps {
+                sh 'create_heatmap target/spotbugs.xml'
+                sh "curl -X POST 'http://dev.our-company.com/spotbugs/heatmaps'  -H 'authorization: ${DEV_PORTAL_AUTHORIZATION_TOKEN}'  -H 'content-type: application/x-www-form-urlencoded' --data-binary '@/home/builder/heatmaps/spotbugs.png'"
+            }
+        }
+        stage('Deploy to test') {
+            steps {
+                sh './deploy.sh test'
+                echo 'waiting for service to start'
+                sh 'sleep 10'
+                sh './smoke_test.sh test'
+            }
+        }
+        stage('regression tests') {
+            steps {
+                sh './regression_tests.sh'
+            }
+        }
+        stage('acceptance tests') {
+            agent {
+                label 'linux || windows'
+            }
+            environment {
+                IS_LINUX = isUnix()
+            }
+            steps {
+                script {
+                    if (IS_LINUX) {
+                        sh './acceptance_tests.sh'
+                    } else {
+                        bat './acceptance_tests.bat'
+                    }
+                }
+            }
+        }
+        stage('performance tests') {
+            agent {
+                label 'performance-tests-coordinator'
+            }
+            when {
+                not {
+                    changelog '^\\[HOTFIX\\].*'
+                }
+            }
+            steps {
+                sh './performance_tests.sh'
+            }
+        }
+        stage('Deploy to UAT') {
+            steps {
+                sh './deploy.sh uat'
+                echo 'waiting for service to start'
+                sh 'sleep 10'
+                sh './smoke_test.sh uat'
+            }
+        }
+        stage('Approve production deployment') {
+            steps {
+                input(message: 'Deploy to production?')
+            }
+        }
+        stage('Deploy to production') {
+            steps {
+                sh './deploy.sh prod'
+                echo 'waiting for service to start'
+                sh 'sleep 10'
+                sh './smoke_test.sh prod'
+            }
+        }
+    }
+    post {
+        failure {
+            mail to: 'support@example.com', subject: 'Pipeline failed or timed out', body: env.BUILD_URL
+        }
+    }
+}
