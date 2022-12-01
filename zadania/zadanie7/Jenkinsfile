@@ -15,6 +15,7 @@ pipeline {
                 sh './mvnw package'
                 junit 'target/surefire-reports/*.xml'
                 jacoco()
+                stash includes: 'pom.xml,mvnw,.mvn/**', name: 'maven_project_definition'
             }
         }
         stage('zapewnienie jakości') {
@@ -33,6 +34,7 @@ pipeline {
                         }
                     }
                     steps {
+                        unstash 'maven_project_definition'
                         sh './mvnw dependency-check:aggregate'
                     }
                 }                
