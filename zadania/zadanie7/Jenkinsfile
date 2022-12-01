@@ -1,0 +1,60 @@
+pipeline {
+    agent none
+    triggers {
+        // pipeline musi zostać uruchomiony przynajmniej raz aby trigger został aktywowany
+        pollSCM 'H/2 * * * *'
+    }
+    options {
+        timestamps()
+    }
+    stages {
+        stage('zbuduj') {
+            agent any
+            steps {
+                git '<ŚCIEŻKA_DO_REPOZYTORIUM>'
+                sh './mvnw package'
+                junit 'target/surefire-reports/*.xml'
+                jacoco()
+            }
+        }
+        stage('zapewnienie jakości') {
+            parallel {
+                stage('przetestuj') {
+                    agent any
+                    steps {
+                        echo "$WORKSPACE"
+                    }
+                }
+                stage('przeskanuj zależności projektu') {
+                    agent any
+                    when {
+                        not {
+                            changelog '.*\\[HOTFIX\\].*'
+                        }
+                    }
+                    steps {
+                        sh './mvnw dependency-check:aggregate'
+                    }
+                }                
+            }
+        }
+        stage('akceptacja wdrożenia') {
+           steps {
+                input message: 'Kontynuować wdrożenie na środowisko docelowe?', ok: 'Tak'
+            }
+        }
+        stage('wdróż') {
+            agent any
+            steps {
+                echo 'wdrażam'
+                withCredentials([string(credentialsId: '<CREDENTIALS_ID_DLA_TOKENA_CHATU_ZOOM>', variable: 'ZOOM_TOKEN'), string(credentialsId: '<CREDENTIALS_ID_DLA_WEBHOOK_URL_CHATU_ZOOM>', variable: 'ZOOM_WEBHOOK')]) {
+                        zoomSend(
+                            authToken: env.ZOOM_TOKEN,
+                            jenkinsProxyUsed: true,
+                            message: "${currentBuild.projectName} build successful",
+                            webhookUrl: env.ZOOM_WEBHOOK)
+                }
+            }
+        }
+    }
+}
