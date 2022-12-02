@@ -1,0 +1,10 @@
+['jenkins-pipeline-automation-starter', 'jenkins-jobdsl-automation-starter'].each { projectName ->
+    job(projectName) {
+        scm {
+            git "https://github.com/kamilszymanski/${projectName}.git"
+        }
+        steps {
+            shell './gradlew build'
+        }
+    }
+}

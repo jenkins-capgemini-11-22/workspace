@@ -1,0 +1,14 @@
+jenkins:
+  numExecutors: 7
+
+jobs:
+  - script: >
+      job('sleeper') {
+        steps {
+          shell 'sleep 30'
+        }
+      }
+
+security:
+  globalJobDslSecurityConfiguration:
+    useScriptSecurity: false
