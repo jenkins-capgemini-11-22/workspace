@@ -1,0 +1,6 @@
+@Library('<NAZWA_BIBLIOTEKI_WSPÓŁDZIELONEJ>') _
+
+mavenProjectPipeline(
+    scmPollingInterval: 'H/2 * * * *',
+    zoomWebhookUrlCredentialsId: '<CREDENTIALS_ID_DLA_WEBHOOK_URL_CHATU_ZOOM>',
+    zoomTokenCredentialsId: '<CREDENTIALS_ID_DLA_TOKENA_CHATU_ZOOM>')
