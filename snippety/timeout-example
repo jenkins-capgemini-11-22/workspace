@@ -1,0 +1,20 @@
+pipeline {
+    agent any
+    options {
+        timestamps()
+        timeout(time: 2, unit: 'SECONDS')
+    }
+    stages {
+        stage('sleep') {
+            steps {
+                sh 'sleep 5'
+            }
+        }
+    }
+    post {
+        aborted {
+            echo 'react to timeout'
+        }
+    }
+}
+
