@@ -1,0 +1,35 @@
+@Library('<NAZWA_BIBLIOTEKI_WSPÓŁDZIELONEJ>') _
+
+pipeline {
+    agent any
+    triggers {
+        // pipeline musi zostać uruchomiony przynajmniej raz aby trigger został aktywowany
+        pollSCM 'H/2 * * * *'
+    }
+    options {
+        timestamps()
+    }
+    stages {
+        stage('zbuduj') {
+            steps {
+                mavenBuild()
+            }
+        }
+        stage('przetestuj') {
+            steps {
+                echo "$WORKSPACE"
+            }
+        }
+        stage('przeskanuj zależności projektu') {
+            steps {
+                sh './mvnw dependency-check:aggregate'
+            }
+        }
+        stage('wdróż') {
+            steps {
+                echo 'wdrażam'
+                sendZoomNotification('<CREDENTIALS_ID_DLA_WEBHOOK_URL_CHATU_ZOOM>', '<CREDENTIALS_ID_DLA_TOKENA_CHATU_ZOOM>', "${currentBuild.projectName} build successful")
+            }
+        }
+    }
+}
