@@ -10,10 +10,10 @@ pipeline {
                         sh script: 'sleep 3', label: 'create & publish Docker image'
                         sh script: 'sleep 1', label: 'publish documentation'
                     } else {
-                        bat script: 'sleep 14', label: 'build'
-                        bat script: 'sleep 1', label: 'publish test results'
-                        bat script: 'sleep 3', label: 'create & publish Docker image'
-                        bat script: 'sleep 1', label: 'publish documentation'
+                        bat 'timeout 14'
+                        bat 'timeout 1'
+                        bat 'timeout 3'
+                        bat 'timeout 1'
                     }
                 }
             }
@@ -26,7 +26,7 @@ pipeline {
                             if (isUnix()) {
                                 sh script: 'sleep 3', label: 'run static analysis'
                             } else {
-                                bat script: 'sleep 3', label: 'run static analysis'
+                                bat 'timeout 3'
                             }
                         }
                     }
@@ -37,7 +37,7 @@ pipeline {
                             if (isUnix()) {
                                 sh script: 'sleep 12', label: 'run security scan'
                             } else {
-                                bat script: 'sleep 12', label: 'run security scan'
+                                bat 'timeout 12'
                             }
                         }
                     }
@@ -48,7 +48,7 @@ pipeline {
                             if (isUnix()) {
                                 sh script: 'sleep 6', label: 'run Docker image scan'
                             } else {
-                                bat script: 'sleep 6', label: 'run Docker image scan'
+                                bat 'timeout 6'
                             }
                         }
                     }
@@ -61,7 +61,7 @@ pipeline {
                     if (isUnix()) {
                         sh script: 'sleep 2', label: 'deploy to dev'
                     } else {
-                        bat script: 'sleep 2', label: 'deploy to dev'
+                        bat 'timeout 2'
                     }
                 }
             }
@@ -72,7 +72,7 @@ pipeline {
                     if (isUnix()) {
                         sh script: 'sleep 3', label: 'run smoke tests'
                     } else {
-                        bat script: 'sleep 3', label: 'run smoke tests'
+                        bat 'timeout 3'
                     }
                 }
             }
@@ -83,7 +83,7 @@ pipeline {
                     if (isUnix()) {
                         sh script: 'sleep 12', label: 'run regression tests'
                     } else {
-                        bat script: 'sleep 12', label: 'run regression tests'
+                        bat script: 'timeout 12', label: 'run regression tests'
                     }
                 }
             }
@@ -94,7 +94,7 @@ pipeline {
                     if (isUnix()) {
                         sh script: 'sleep 24', label: 'run acceptance tests'
                     } else {
-                        bat script: 'sleep 24', label: 'run acceptance tests'
+                        bat 'timeout 24'
                     }
                 }
             }
@@ -105,7 +105,7 @@ pipeline {
                     if (isUnix()) {
                         sh script: 'sleep 54', label: 'run performance tests'
                     } else {
-                        bat script: 'sleep 54', label: 'run performance tests'
+                        bat 'timeout 54'
                     }
                 }
             }
@@ -116,7 +116,7 @@ pipeline {
                     if (isUnix()) {
                         sh script: 'sleep 2', label: 'deploy to stage'
                     } else {
-                        bat script: 'sleep 2', label: 'deploy to stage'
+                        bat 'timeout 2'
                     }
                 }
             }
@@ -127,7 +127,7 @@ pipeline {
                     if (isUnix()) {
                         sh script: 'sleep 3', label: 'run smoke tests'
                     } else {
-                        bat script: 'sleep 3', label: 'run smoke tests'
+                        bat 'timeout 3'
                     }
                 }
             }
@@ -138,7 +138,7 @@ pipeline {
                     if (isUnix()) {
                         sh script: 'sleep 2', label: 'deploy to prod'
                     } else {
-                        bat script: 'sleep 2', label: 'deploy to prod'
+                        bat 'timeout 2'
                     }
                 }
             }
@@ -149,7 +149,7 @@ pipeline {
                     if (isUnix()) {
                         sh script: 'sleep 3', label: 'run smoke tests'
                     } else {
-                        bat script: 'sleep 3', label: 'run smoke tests'
+                        bat 'timeout 3'
                     }
                 }
             }
@@ -160,7 +160,7 @@ pipeline {
                     if (isUnix()) {
                         sh script: 'sleep 5', label: 'run synthetic tests'
                     } else {
-                        bat script: 'sleep 5', label: 'run synthetic tests'
+                        bat 'timeout 5'
                     }
                 }
             }
