@@ -1,0 +1,169 @@
+pipeline {
+    agent any
+    stages {
+        stage('build') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 14', label: 'build'
+                        sh script: 'sleep 1', label: 'publish test results'
+                        sh script: 'sleep 3', label: 'create & publish Docker image'
+                        sh script: 'sleep 1', label: 'publish documentation'
+                    } else {
+                        bat script: 'sleep 14', label: 'build'
+                        bat script: 'sleep 1', label: 'publish test results'
+                        bat script: 'sleep 3', label: 'create & publish Docker image'
+                        bat script: 'sleep 1', label: 'publish documentation'
+                    }
+                }
+            }
+        }
+        stage('quality gates') {
+            parallel {
+                stage('static analysis') {
+                    steps {
+                        script {
+                            if (isUnix()) {
+                                sh script: 'sleep 3', label: 'run static analysis'
+                            } else {
+                                bat script: 'sleep 3', label: 'run static analysis'
+                            }
+                        }
+                    }
+                }
+                stage('security scanning') {
+                    steps {
+                        script {
+                            if (isUnix()) {
+                                sh script: 'sleep 12', label: 'run security scan'
+                            } else {
+                                bat script: 'sleep 12', label: 'run security scan'
+                            }
+                        }
+                    }
+                }
+                stage('Docker image scanning') {
+                    steps {
+                        script {
+                            if (isUnix()) {
+                                sh script: 'sleep 6', label: 'run Docker image scan'
+                            } else {
+                                bat script: 'sleep 6', label: 'run Docker image scan'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('deploy to dev environment') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 2', label: 'deploy to dev'
+                    } else {
+                        bat script: 'sleep 2', label: 'deploy to dev'
+                    }
+                }
+            }
+        }
+        stage('smoke tests dev') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 3', label: 'run smoke tests'
+                    } else {
+                        bat script: 'sleep 3', label: 'run smoke tests'
+                    }
+                }
+            }
+        }
+        stage('regression tests') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 12', label: 'run regression tests'
+                    } else {
+                        bat script: 'sleep 12', label: 'run regression tests'
+                    }
+                }
+            }
+        }
+        stage('acceptance tests') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 24', label: 'run acceptance tests'
+                    } else {
+                        bat script: 'sleep 24', label: 'run acceptance tests'
+                    }
+                }
+            }
+        }
+        stage('performance tests') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 54', label: 'run performance tests'
+                    } else {
+                        bat script: 'sleep 54', label: 'run performance tests'
+                    }
+                }
+            }
+        }
+        stage('deploy to staging') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 2', label: 'deploy to stage'
+                    } else {
+                        bat script: 'sleep 2', label: 'deploy to stage'
+                    }
+                }
+            }
+        }
+        stage('smoke tests stage') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 3', label: 'run smoke tests'
+                    } else {
+                        bat script: 'sleep 3', label: 'run smoke tests'
+                    }
+                }
+            }
+        }
+        stage('deploy to production') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 2', label: 'deploy to prod'
+                    } else {
+                        bat script: 'sleep 2', label: 'deploy to prod'
+                    }
+                }
+            }
+        }
+        stage('smoke tests production') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 3', label: 'run smoke tests'
+                    } else {
+                        bat script: 'sleep 3', label: 'run smoke tests'
+                    }
+                }
+            }
+        }
+        stage('synthetic tests') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh script: 'sleep 5', label: 'run synthetic tests'
+                    } else {
+                        bat script: 'sleep 5', label: 'run synthetic tests'
+                    }
+                }
+            }
+        }
+    }
+}
